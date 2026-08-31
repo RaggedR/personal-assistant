@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Credentials — NEVER commit these
+client.json
+client_secret*.json
+gcp-oauth.keys.json
+token.json
+credentials.json
+*.pem
+.env
+
+# OS
+.DS_Store
