@@ -107,14 +107,15 @@ access to their email.
 
 2. **Never ask them to paste a token, password or secret into this chat.**
    Chat transcripts are stored. When a secret must be typed, they type it into
-   their own terminal or browser, never to you. This applies to their GitHub
-   personal access token and to anything Google shows them. You verify success
-   by running a status command, not by reading the secret.
+   their own terminal or browser, never to you. Nothing on the main path asks
+   for a secret; if you go on to Appendix A, this applies to the GitHub token.
+   You verify success by running a status command, not by reading the secret.
 
-3. **Probe before you ask.** Before asking "do you have a GitHub account?", run
-   `gh auth status`. Before asking about Python, run `python3 --version`. Skip
-   any stage that is already done, and tell them you are skipping it and why.
-   Never make someone answer a question a command could answer.
+3. **Probe before you ask.** Before asking "is Python installed?", run
+   `python3 --version`. Before asking whether the tool is already set up, run
+   `pa auth status`. Skip any stage that is already done, and tell them you are
+   skipping it and why. Never make someone answer a question a command could
+   answer.
 
 4. **Be explicit by default, and never condescending.** Assume they can follow
    precise instructions but do not know this specific console. Name buttons in
@@ -147,8 +148,8 @@ Start roughly like this — adapt the wording, keep the specifics:
 > your Gmail, Google Calendar and Contacts. Once it's working I'll be able to
 > search your mail, draft replies and check your calendar directly.
 >
-> It takes about 30 minutes. Most of it is me running things; the parts you'll
-> do are in your browser, mostly clicking through Google's setup.
+> It takes about 20 minutes. Most of it is me running things; the parts you'll
+> do are in your browser, clicking through Google's permission setup.
 >
 > Two things worth knowing up front:
 >
@@ -177,265 +178,34 @@ do not narrate each one.
 uname -s -m                  # OS and architecture (skip on Windows)
 python3 --version            # need 3.10 or newer
 git --version
-gh --version
-gh auth status               # already authenticated to GitHub?
 command -v uv pipx brew      # which installers are available
 echo "$PATH" | tr ':' '\n' | grep -c "$HOME/.local/bin"
 pa --version                 # already installed?
 ```
 
-Then tell them, in one short message, what you found and which stages you are
-skipping. For example:
+That is the whole list. There is deliberately no GitHub check here: the
+repository is public, so nothing in Stages 1–4 needs a GitHub account, the `gh`
+CLI, or a token. Do not raise the subject.
 
-> Good news — you already have Git, Python 3.12 and the GitHub CLI installed,
-> and you're logged in to GitHub as `nickmeinhold`. That means we can skip
-> straight past the GitHub setup to installing the tool itself.
+Then tell them, in one short message, what you found. For example:
+
+> You've already got Git and Python 3.12, so we can go straight to downloading
+> the tool. Nothing to install first.
 
 → STOP. Confirm before proceeding.
 
-If `pa --version` already works, jump to Stage 6 (Google authorisation) and
-then Stage 7.
+If `pa --version` already works, jump to Stage 3 (Google authorisation) and
+then Stage 4.
 
 ---
 
-## Stage 1 — GitHub account
+## Stage 1 — Clone the repository
 
-Skip this entire stage if `gh auth status` showed them logged in.
+Your job entirely. The repository is public, so this needs no GitHub account,
+no login and no token — it works on a completely unauthenticated machine. Do
+not send them to GitHub for anything.
 
-### Step 1.1 — Do they have an account?
-
-> Do you already have a GitHub account? If you're not sure, that means no.
-
-→ STOP.
-
-If yes, skip to Stage 2.
-
-### Step 1.2 — Sign up
-
-> Open this URL:
->
-> https://github.com/signup
->
-> Enter your email address and click **Continue**.
-
-→ STOP.
-
-### Step 1.3 — Password
-
-> Now it will ask for a password. Use something long — a password manager is
-> ideal if you have one. Enter it and click **Continue**.
-
-→ STOP.
-
-### Step 1.4 — Username
-
-> Next it asks for a username. This is public and hard to change later, so pick
-> something you're happy having attached to your name — many people use some
-> form of their own name.
->
-> Enter it and click **Continue**. If it says the name is taken, try a variation.
-
-→ STOP.
-
-### Step 1.5 — Preferences and verification
-
-> It will ask whether you want product emails — answer however you like, then
-> click **Continue**.
->
-> Then it will show a puzzle or ask you to verify you're human. Complete that,
-> then click **Create account**.
-
-→ STOP.
-
-### Step 1.6 — Email code
-
-> GitHub has emailed you an 8-digit code. Find that email, type the code into
-> the boxes on the page, and you should land on a welcome screen.
->
-> If it asks you questions about your experience level or interests, you can
-> skip all of that — look for a **Skip personalization** link at the bottom.
->
-> What's your GitHub username? I'll need it in a moment.
-
-→ STOP.
-
----
-
-## Stage 2 — Install the GitHub CLI
-
-Skip if `gh --version` already worked.
-
-### Step 2.1 — Install it
-
-This is your job, not theirs. Pick the branch matching their OS.
-
-**macOS**, if `brew` exists:
-
-```bash
-brew install gh
-```
-
-**macOS**, if `brew` does not exist — Homebrew's installer needs their admin
-password, which they must type themselves. Tell them:
-
-> I need to install Homebrew first, which is the standard way to install
-> command-line tools on a Mac. It needs your Mac login password, so you'll have
-> to run this one yourself.
->
-> Open the Terminal app and paste in this line, then press Enter:
->
-> ```
-> /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-> ```
->
-> It will ask for your password — the characters won't appear as you type, which
-> is normal. It takes a few minutes. Tell me when it finishes, and paste the
-> last few lines it printed.
-
-→ STOP. The final lines often contain PATH instructions you need to follow.
-
-**Windows**:
-
-```bash
-winget install --id GitHub.cli -e
-```
-
-**Debian/Ubuntu Linux** — needs `sudo`, so they run it:
-
-```bash
-sudo apt update && sudo apt install gh
-```
-
-### Step 2.2 — Confirm
-
-Run `gh --version` yourself and report the result in one line.
-
-→ STOP.
-
----
-
-## Stage 3 — GitHub personal access token
-
-A token lets `gh` act on their behalf from the command line.
-
-**Note for you:** if they would rather not create a token, `gh auth login` also
-offers a browser flow that needs no token at all — choose *GitHub.com* →
-*HTTPS* → *Login with a web browser* and read them the one-time code. That is
-genuinely simpler and just as valid. Offer it if they hesitate or get stuck.
-Otherwise follow the token path below, which is what Robin asked for and which
-is more convenient for scripting later.
-
-### Step 3.1 — Open the token page
-
-> Open this URL:
->
-> https://github.com/settings/tokens/new
->
-> If it asks you to confirm your password or 2FA code first, do that.
->
-> You should land on a page headed **New personal access token (classic)**.
-> Tell me if you see that, or if you see something different.
-
-→ STOP.
-
-If they landed somewhere else, the menu path is: click your **avatar** in the
-top-right corner → **Settings** → scroll to the very bottom of the left-hand
-sidebar → **Developer settings** → **Personal access tokens** → **Tokens
-(classic)** → **Generate new token** → **Generate new token (classic)**.
-
-Note there are two kinds of token — *Fine-grained* and *classic*. They need
-**classic**. If the page says "Fine-grained tokens", they are on the wrong one.
-
-### Step 3.2 — Name and expiry
-
-> In the **Note** field at the top, type:
->
-> ```
-> Claude Code
-> ```
->
-> Just below it there's an **Expiration** dropdown, probably set to 30 days.
-> Change it to **90 days**. (You can pick "No expiration", but a token that
-> never expires is a token that can never be forgotten about safely.)
->
-> Don't click anything else yet.
-
-→ STOP.
-
-### Step 3.3 — Scopes
-
-> Now a long list of checkboxes headed **Select scopes**. Check exactly these
-> four:
->
-> - **repo** — the first one in the list. Clicking the top-level `repo` box
->   ticks all the boxes indented beneath it. That's correct.
-> - **workflow** — just below the repo group.
-> - **gist** — further down, on its own.
-> - **read:org** — this one is *indented underneath* **admin:org**. Do not tick
->   `admin:org` itself; expand it if needed and tick only `read:org`.
->
-> Leave everything else unchecked. Tell me when those four are ticked.
-
-→ STOP.
-
-### Step 3.4 — Generate
-
-> Scroll to the very bottom and click the green **Generate token** button.
->
-> The next page shows your token — a long string starting with `ghp_`. It is
-> shown **once only**; if you navigate away it's gone forever and you'd have to
-> make a new one.
->
-> Click the copy icon next to it to copy it to your clipboard. **Don't paste it
-> here** — I don't need to see it, and chat transcripts get stored.
-
-→ STOP.
-
-### Step 3.5 — Give it to `gh`
-
-They must do this in their own terminal so the token never enters the chat.
-
-> Open a terminal window — on a Mac that's the **Terminal** app, on Windows use
-> **PowerShell** — and paste in this line, then press Enter:
->
-> ```
-> gh auth login --with-token
-> ```
->
-> The cursor will just sit there waiting. Paste your token (Cmd+V or Ctrl+V) and
-> press Enter, then press **Ctrl+D**.
->
-> If it worked, it prints nothing at all — silence is success here. Tell me when
-> you've done it.
-
-→ STOP.
-
-### Step 3.6 — Verify
-
-Run this yourself:
-
-```bash
-gh auth status
-```
-
-It shows the account and scopes but never the token. Report in one line:
-
-> You're logged in to GitHub as `<username>`, with the right permissions.
-
-If it fails, the most likely causes are a partially-copied token or a missed
-Ctrl+D. Have them repeat 3.5. If it fails twice, switch to the browser flow
-(`gh auth login`, choose *Login with a web browser*).
-
-→ STOP.
-
----
-
-## Stage 4 — Clone the repository
-
-Your job entirely. The repository is public, so this works whether or not
-Stage 3 happened.
-
-### Step 4.1 — Clone
+### Step 1.1 — Clone
 
 ```bash
 git clone https://github.com/RaggedR/personal-assistant.git ~/personal-assistant
@@ -451,11 +221,11 @@ Report in one line:
 
 ---
 
-## Stage 5 — Install the tool
+## Stage 2 — Install the tool
 
 Your job entirely. Do not make them run any of this.
 
-### Step 5.1 — Check Python
+### Step 2.1 — Check Python
 
 `pa` needs Python 3.10 or newer. You checked this in Stage 0.
 
@@ -463,7 +233,7 @@ If it is too old or missing: on macOS `brew install python@3.12`; on Windows
 `winget install --id Python.Python.3.12 -e`; on Debian/Ubuntu
 `sudo apt install python3 python3-venv` (they run the `sudo` one).
 
-### Step 5.2 — Install
+### Step 2.2 — Install
 
 In order of preference. Note the `cd` — every command below assumes you are
 in the cloned directory.
@@ -504,7 +274,7 @@ ships a mismatched `libexpat`. The symptom is an `ImportError` mentioning
 `pyexpat` and `_XML_SetAllocTrackerActivationThreshold`. Do not try to fix it —
 use `uv` instead.
 
-### Step 5.3 — Make sure `pa` is on PATH
+### Step 2.3 — Make sure `pa` is on PATH
 
 Both `uv` and `pipx` install to `~/.local/bin`. If that is not on their PATH,
 `pa` will appear not to exist.
@@ -526,7 +296,7 @@ Tell them, because their own terminal windows need it too:
 > open won't know about it — close and reopen them, or run
 > `source ~/.zshrc` in each.
 
-### Step 5.4 — Confirm
+### Step 2.4 — Confirm
 
 ```bash
 pa --version
@@ -559,7 +329,7 @@ Report:
 
 ---
 
-## Stage 6 — Authorise Google access
+## Stage 3 — Authorise Google access
 
 This is the longest stage and the one where they will get lost. Take it slowly.
 
@@ -576,7 +346,7 @@ Auth Platform" design. Which one they see depends on the age of their project
 and the rollout. Both are covered below. When in doubt, ask for a screenshot
 and branch on what is actually there.
 
-### Step 6.1 — Create a project
+### Step 3.1 — Create a project
 
 > Open this URL:
 >
@@ -600,7 +370,7 @@ and branch on what is actually there.
 
 → STOP.
 
-### Step 6.2 — Make sure the project is selected
+### Step 3.2 — Make sure the project is selected
 
 This trips people up constantly: they enable APIs on the wrong project and
 nothing works later, with a confusing error.
@@ -613,7 +383,7 @@ nothing works later, with a confusing error.
 
 → STOP.
 
-### Step 6.3 — Enable the Gmail API
+### Step 3.3 — Enable the Gmail API
 
 One API per step. Do not combine these three.
 
@@ -629,7 +399,7 @@ One API per step. Do not combine these three.
 
 → STOP.
 
-### Step 6.4 — Enable the Calendar API
+### Step 3.4 — Enable the Calendar API
 
 > Same again, different URL:
 >
@@ -639,7 +409,7 @@ One API per step. Do not combine these three.
 
 → STOP.
 
-### Step 6.5 — Enable the People API
+### Step 3.5 — Enable the People API
 
 > Last one — this is for Contacts, so I can look up someone's address by name:
 >
@@ -649,7 +419,7 @@ One API per step. Do not combine these three.
 
 → STOP.
 
-### Step 6.6 — Find out which console design they have
+### Step 3.6 — Find out which console design they have
 
 > Now open this URL:
 >
@@ -668,7 +438,7 @@ One API per step. Do not combine these three.
 
 → STOP. Branch on the answer.
 
-### Step 6.7a — Newer console ("Google Auth Platform")
+### Step 3.7a — Newer console ("Google Auth Platform")
 
 Follow this only if they answered (a).
 
@@ -706,9 +476,9 @@ Follow this only if they answered (a).
 
 → STOP. (Skip this sub-step if they chose Internal — Internal has no test users.)
 
-Now continue at Step 6.8.
+Now continue at Step 3.8.
 
-### Step 6.7b — Classic console ("OAuth consent screen")
+### Step 3.7b — Classic console ("OAuth consent screen")
 
 Follow this only if they answered (b).
 
@@ -750,7 +520,7 @@ Follow this only if they answered (b).
 
 → STOP.
 
-### Step 6.8 — Create the OAuth client
+### Step 3.8 — Create the OAuth client
 
 > Open this URL:
 >
@@ -764,7 +534,7 @@ Follow this only if they answered (b).
 
 → STOP.
 
-### Step 6.9 — Choose Desktop app
+### Step 3.9 — Choose Desktop app
 
 This is the single most important click in the whole process. Getting it wrong
 produces a `redirect_uri_mismatch` error much later, which is hard to trace back
@@ -779,7 +549,7 @@ to here.
 
 → STOP.
 
-### Step 6.10 — Download the JSON
+### Step 3.10 — Download the JSON
 
 > A dialog appears headed something like **OAuth client created**, showing a
 > Client ID and Client Secret.
@@ -794,7 +564,7 @@ to here.
 
 → STOP.
 
-### Step 6.11 — Install the client file
+### Step 3.11 — Install the client file
 
 Your job. Find the most recent download and install it:
 
@@ -814,7 +584,7 @@ Then:
 
 → STOP.
 
-### Step 6.12 — Log in
+### Step 3.12 — Log in
 
 They run this one themselves. It opens a browser and waits, so it is better in
 their own terminal where they can see it and interrupt it if needed.
@@ -830,7 +600,7 @@ their own terminal where they can see it and interrupt it if needed.
 
 → STOP.
 
-### Step 6.13 — Get past the "unverified app" warning
+### Step 3.13 — Get past the "unverified app" warning
 
 Warn them before it appears, or it looks alarming.
 
@@ -845,7 +615,7 @@ Warn them before it appears, or it looks alarming.
 
 → STOP.
 
-### Step 6.14 — Grant the permissions
+### Step 3.14 — Grant the permissions
 
 > Now Google lists what the tool wants: read and send mail, manage calendars,
 > read contacts.
@@ -858,7 +628,7 @@ Warn them before it appears, or it looks alarming.
 
 → STOP.
 
-### Step 6.15 — Verify for real
+### Step 3.15 — Verify for real
 
 Your job. Run:
 
@@ -890,17 +660,17 @@ real to them:
 → STOP.
 
 If any service shows `[fail]` or `[none]`, go to the troubleshooting table
-below. Do not proceed to Stage 7 with a broken service.
+below. Do not proceed to Stage 4 with a broken service.
 
 ---
 
-## Stage 7 — Teach their Claude to use it
+## Stage 4 — Teach their Claude to use it
 
 The tool is installed, but *their* Claude does not yet know it exists or what
 the safety rules are. Without this stage, their next session will reach for
 whatever it can find and may not respect the sending rule.
 
-### Step 7.1 — Ask permission to edit their config
+### Step 4.1 — Ask permission to edit their config
 
 > One last thing, and this one's for me rather than you. I'd like to add a note
 > to your `~/.claude/CLAUDE.md` — the file of standing instructions I read at
@@ -911,7 +681,7 @@ whatever it can find and may not respect the sending rule.
 
 → STOP. Do not edit their configuration without asking.
 
-### Step 7.2 — Append the block
+### Step 4.2 — Append the block
 
 Append this to `~/.claude/CLAUDE.md`, creating the file if needed. Do not
 overwrite anything already there.
@@ -943,7 +713,7 @@ overwrite anything already there.
   Outbound notifications need the same permission as sending mail.
 ```
 
-### Step 7.3 — Hand over
+### Step 4.3 — Hand over
 
 > You're set up. From now on you can just ask me things like:
 >
@@ -957,7 +727,261 @@ overwrite anything already there.
 > week, because the app is in "testing" mode. I'll tell you if that happens, and
 > there's a permanent fix if it gets annoying — just ask.
 
-→ STOP. Done.
+→ STOP. Setup is complete.
+
+Only now, if you judge it useful and they seem willing, may you offer Appendix A
+(GitHub account and CLI). It is unrelated to `pa` and entirely optional. If in
+any doubt, don't — finishing cleanly is better than tacking on fifteen more
+minutes of setup they did not ask for.
+
+---
+## Appendix A — Optional: GitHub account, CLI and token
+
+**None of this is needed to set up `pa`.** The repository is public, so cloning
+it requires no GitHub account, no `gh`, and no token — Stage 1 works on a
+completely unauthenticated machine.
+
+Do not walk them through this as part of setup. It is here because a GitHub
+account and a working `gh` are genuinely useful for other work with Claude
+(filing issues, opening pull requests, private repositories), so it is worth
+having written down. Offer it *after* Stage 1 is finished and working, as a
+separate thing, and only if they want it:
+
+> Everything's working. Separately — and entirely optionally — do you want me to
+> set you up with a GitHub account and command-line access? It's not needed for
+> any of this, but it's useful if we end up working on code together. Takes
+> about 15 minutes. Happy to skip it.
+
+If they say no, you are done. If they say yes, the same one-step-at-a-time rule
+applies throughout.
+
+
+### A.1 — GitHub account
+
+Skip this entire stage if `gh auth status` showed them logged in.
+
+#### Step A.1.1 — Do they have an account?
+
+> Do you already have a GitHub account? If you're not sure, that means no.
+
+→ STOP.
+
+If yes, skip to A.2.
+
+#### Step A.1.2 — Sign up
+
+> Open this URL:
+>
+> https://github.com/signup
+>
+> Enter your email address and click **Continue**.
+
+→ STOP.
+
+#### Step A.1.3 — Password
+
+> Now it will ask for a password. Use something long — a password manager is
+> ideal if you have one. Enter it and click **Continue**.
+
+→ STOP.
+
+#### Step A.1.4 — Username
+
+> Next it asks for a username. This is public and hard to change later, so pick
+> something you're happy having attached to your name — many people use some
+> form of their own name.
+>
+> Enter it and click **Continue**. If it says the name is taken, try a variation.
+
+→ STOP.
+
+#### Step A.1.5 — Preferences and verification
+
+> It will ask whether you want product emails — answer however you like, then
+> click **Continue**.
+>
+> Then it will show a puzzle or ask you to verify you're human. Complete that,
+> then click **Create account**.
+
+→ STOP.
+
+#### Step A.1.6 — Email code
+
+> GitHub has emailed you an 8-digit code. Find that email, type the code into
+> the boxes on the page, and you should land on a welcome screen.
+>
+> If it asks you questions about your experience level or interests, you can
+> skip all of that — look for a **Skip personalization** link at the bottom.
+>
+> What's your GitHub username? I'll need it in a moment.
+
+→ STOP.
+
+
+### A.2 — Install the GitHub CLI
+
+Skip if `gh --version` already worked.
+
+#### Step A.2.1 — Install it
+
+This is your job, not theirs. Pick the branch matching their OS.
+
+**macOS**, if `brew` exists:
+
+```bash
+brew install gh
+```
+
+**macOS**, if `brew` does not exist — Homebrew's installer needs their admin
+password, which they must type themselves. Tell them:
+
+> I need to install Homebrew first, which is the standard way to install
+> command-line tools on a Mac. It needs your Mac login password, so you'll have
+> to run this one yourself.
+>
+> Open the Terminal app and paste in this line, then press Enter:
+>
+> ```
+> /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+> ```
+>
+> It will ask for your password — the characters won't appear as you type, which
+> is normal. It takes a few minutes. Tell me when it finishes, and paste the
+> last few lines it printed.
+
+→ STOP. The final lines often contain PATH instructions you need to follow.
+
+**Windows**:
+
+```bash
+winget install --id GitHub.cli -e
+```
+
+**Debian/Ubuntu Linux** — needs `sudo`, so they run it:
+
+```bash
+sudo apt update && sudo apt install gh
+```
+
+#### Step A.2.2 — Confirm
+
+Run `gh --version` yourself and report the result in one line.
+
+→ STOP.
+
+
+### A.3 — GitHub personal access token
+
+A token lets `gh` act on their behalf from the command line.
+
+**Note for you:** if they would rather not create a token, `gh auth login` also
+offers a browser flow that needs no token at all — choose *GitHub.com* →
+*HTTPS* → *Login with a web browser* and read them the one-time code. That is
+genuinely simpler and just as valid. Offer it if they hesitate or get stuck.
+Otherwise follow the token path below, which is more convenient for scripting later.
+
+#### Step A.3.1 — Open the token page
+
+> Open this URL:
+>
+> https://github.com/settings/tokens/new
+>
+> If it asks you to confirm your password or 2FA code first, do that.
+>
+> You should land on a page headed **New personal access token (classic)**.
+> Tell me if you see that, or if you see something different.
+
+→ STOP.
+
+If they landed somewhere else, the menu path is: click your **avatar** in the
+top-right corner → **Settings** → scroll to the very bottom of the left-hand
+sidebar → **Developer settings** → **Personal access tokens** → **Tokens
+(classic)** → **Generate new token** → **Generate new token (classic)**.
+
+Note there are two kinds of token — *Fine-grained* and *classic*. They need
+**classic**. If the page says "Fine-grained tokens", they are on the wrong one.
+
+#### Step A.3.2 — Name and expiry
+
+> In the **Note** field at the top, type:
+>
+> ```
+> Claude Code
+> ```
+>
+> Just below it there's an **Expiration** dropdown, probably set to 30 days.
+> Change it to **90 days**. (You can pick "No expiration", but a token that
+> never expires is a token that can never be forgotten about safely.)
+>
+> Don't click anything else yet.
+
+→ STOP.
+
+#### Step A.3.3 — Scopes
+
+> Now a long list of checkboxes headed **Select scopes**. Check exactly these
+> four:
+>
+> - **repo** — the first one in the list. Clicking the top-level `repo` box
+>   ticks all the boxes indented beneath it. That's correct.
+> - **workflow** — just below the repo group.
+> - **gist** — further down, on its own.
+> - **read:org** — this one is *indented underneath* **admin:org**. Do not tick
+>   `admin:org` itself; expand it if needed and tick only `read:org`.
+>
+> Leave everything else unchecked. Tell me when those four are ticked.
+
+→ STOP.
+
+#### Step A.3.4 — Generate
+
+> Scroll to the very bottom and click the green **Generate token** button.
+>
+> The next page shows your token — a long string starting with `ghp_`. It is
+> shown **once only**; if you navigate away it's gone forever and you'd have to
+> make a new one.
+>
+> Click the copy icon next to it to copy it to your clipboard. **Don't paste it
+> here** — I don't need to see it, and chat transcripts get stored.
+
+→ STOP.
+
+#### Step A.3.5 — Give it to `gh`
+
+They must do this in their own terminal so the token never enters the chat.
+
+> Open a terminal window — on a Mac that's the **Terminal** app, on Windows use
+> **PowerShell** — and paste in this line, then press Enter:
+>
+> ```
+> gh auth login --with-token
+> ```
+>
+> The cursor will just sit there waiting. Paste your token (Cmd+V or Ctrl+V) and
+> press Enter, then press **Ctrl+D**.
+>
+> If it worked, it prints nothing at all — silence is success here. Tell me when
+> you've done it.
+
+→ STOP.
+
+#### Step A.3.6 — Verify
+
+Run this yourself:
+
+```bash
+gh auth status
+```
+
+It shows the account and scopes but never the token. Report in one line:
+
+> You're logged in to GitHub as `<username>`, with the right permissions.
+
+If it fails, the most likely causes are a partially-copied token or a missed
+Ctrl+D. Have them repeat 3.5. If it fails twice, switch to the browser flow
+(`gh auth login`, choose *Login with a web browser*).
+
+→ STOP.
 
 ---
 
@@ -965,14 +989,14 @@ overwrite anything already there.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `access_blocked`, "app has not completed verification" | Their address is not in Test Users | Step 6.7a/6.7b test-users sub-step |
-| `redirect_uri_mismatch` | Client created as "Web application" | Redo 6.8–6.10 choosing **Desktop app** |
+| `access_blocked`, "app has not completed verification" | Their address is not in Test Users | Step 3.7a/3.7b test-users sub-step |
+| `redirect_uri_mismatch` | Client created as "Web application" | Redo 3.8–3.10 choosing **Desktop app** |
 | `Token refresh failed` after ~a week | Refresh tokens expire in 7 days for unverified apps in *testing* with sensitive scopes | `pa auth login --force`. Permanent fix: on the consent screen / Audience page click **PUBLISH APP** (no review needed for personal use), or use *Internal* on a Workspace account |
-| `Client: ... (MISSING)` in `pa auth status` | Step 6.11 not done | `pa auth setup-client <path to downloaded json>` |
-| `insufficient authentication scopes` | A checkbox was left unticked at 6.14 | `pa auth login --force`, tick everything |
-| `SERVICE_DISABLED` / "People API has not been used" | An API was enabled on the wrong project | Re-check 6.2, then redo 6.3–6.5 with `pa-cli` selected |
-| `pa: command not found` | `~/.local/bin` not on PATH | Step 5.3 |
-| `ImportError ... pyexpat` when installing | Broken Homebrew `pipx` | Use `uv` instead (5.2) |
+| `Client: ... (MISSING)` in `pa auth status` | Step 3.11 not done | `pa auth setup-client <path to downloaded json>` |
+| `insufficient authentication scopes` | A checkbox was left unticked at 3.14 | `pa auth login --force`, tick everything |
+| `SERVICE_DISABLED` / "People API has not been used" | An API was enabled on the wrong project | Re-check 3.2, then redo 3.3–3.5 with `pa-cli` selected |
+| `pa: command not found` | `~/.local/bin` not on PATH | Step 2.3 |
+| `ImportError ... pyexpat` when installing | Broken Homebrew `pipx` | Use `uv` instead (2.2) |
 | Contacts `[ok]` but searches return nothing | People API needs a warm-up before first search; `pa` does this automatically, but a brand-new account may genuinely have no "other contacts" yet | Try `pa contacts search` with a name they have definitely emailed |
 | Everything worked, then stopped after they changed Google password | Google revokes tokens on password change | `pa auth login --force` |
 

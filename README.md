@@ -77,10 +77,13 @@ Paste this into a Claude Code session:
 > and follow it to set me up.
 
 [`ONBOARDING.md`](ONBOARDING.md) is written *for Claude*, not for you. It walks
-it through creating a GitHub account, installing the tooling, and the Google
-Cloud OAuth dance — one step at a time, doing every technical part itself, and
-asking you only for the things that need your browser. Roughly 30 minutes, most
-of it waiting.
+it through cloning, installing, and the Google Cloud OAuth setup — one step at a
+time, doing every technical part itself, and asking you only for the things that
+genuinely need your browser. Roughly 20 minutes, most of it waiting.
+
+You do **not** need a GitHub account, the `gh` CLI, or an access token: this
+repository is public, so the clone works on a completely unauthenticated
+machine.
 
 If you would rather do it by hand, carry on below and see
 [`docs/SETUP.md`](docs/SETUP.md) for the Google side.
