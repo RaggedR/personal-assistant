@@ -465,16 +465,33 @@ If it is too old or missing: on macOS `brew install python@3.12`; on Windows
 
 ### Step 5.2 — Install
 
-In order of preference, from `~/personal-assistant`:
+In order of preference. Note the `cd` — every command below assumes you are
+in the cloned directory.
 
 ```bash
+cd ~/personal-assistant
+
 # Preferred: uv
 uv tool install --editable .
+```
 
-# If uv is absent, install it first (no admin password needed):
+If `uv` is absent, install it first (no admin password needed):
+
+```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
-# Alternative: pipx
+**Then use the full path, not bare `uv`.** The installer puts it in
+`~/.local/bin`, which is not on the PATH of the shell you are already in, so a
+bare `uv` will report "command not found" seconds after a successful install:
+
+```bash
+~/.local/bin/uv tool install --editable .
+```
+
+Alternatives, in order:
+
+```bash
 pipx install --editable .
 
 # Last resort, always works:
@@ -513,16 +530,28 @@ Tell them, because their own terminal windows need it too:
 
 ```bash
 pa --version
-python3 -m pytest -q          # from ~/personal-assistant; expect 75 passed
 ```
 
-The test suite is fully offline and takes under a second. Running it here is
-worthwhile: it proves the install is sound before you start attaching their
-Google account to it.
+Then, optionally, run the test suite. It is fully offline and takes under a
+second, and proves the install is sound before you attach their Google account
+to it.
+
+`pytest` is a development dependency and is **not** installed by
+`uv tool install`, so do not run bare `python3 -m pytest` — on a clean machine
+that fails with "No module named pytest", which looks like a broken install but
+is not. Either run it in a throwaway environment:
+
+```bash
+cd ~/personal-assistant && ~/.local/bin/uv run --with pytest --with-editable . pytest -q
+```
+
+or simply skip it. `pa --version` succeeding is sufficient evidence to continue.
+Never report "the tests failed" when what actually happened is that pytest was
+absent.
 
 Report:
 
-> `pa` is installed and its 75 tests pass. Now the only thing left is giving it
+> `pa` is installed and working. Now the only thing left is giving it
 > permission to see your Google account — that's the fiddly part, and it's all
 > in your browser.
 
