@@ -68,6 +68,23 @@ $ pa mail send --draft-id <id> --confirm
 Permanent deletion is not implemented at all. `pa mail trash` moves a message
 to Trash, where Gmail keeps it for 30 days.
 
+## Setting up for the first time
+
+**If you have Claude Code, don't follow the instructions below — let Claude do it.**
+Paste this into a Claude Code session:
+
+> Read https://raw.githubusercontent.com/RaggedR/personal-assistant/main/ONBOARDING.md
+> and follow it to set me up.
+
+[`ONBOARDING.md`](ONBOARDING.md) is written *for Claude*, not for you. It walks
+it through creating a GitHub account, installing the tooling, and the Google
+Cloud OAuth dance — one step at a time, doing every technical part itself, and
+asking you only for the things that need your browser. Roughly 30 minutes, most
+of it waiting.
+
+If you would rather do it by hand, carry on below and see
+[`docs/SETUP.md`](docs/SETUP.md) for the Google side.
+
 ## Install
 
 Requires Python 3.10+.
