@@ -31,3 +31,33 @@ def api_base() -> str:
 
 def bridge_binary() -> Path:
     return bridge_dir() / "whatsapp-bridge"
+
+
+def _settings_path():
+    return Path.home() / ".config" / "pa" / "wa.json"
+
+
+def own_phone() -> str | None:
+    """The account holder's own number, needed for code-based pairing."""
+    if os.environ.get("WA_PHONE"):
+        return os.environ["WA_PHONE"]
+    import json
+
+    try:
+        return json.loads(_settings_path().read_text()).get("own_phone")
+    except (OSError, ValueError):
+        return None
+
+
+def save_own_phone(phone: str) -> None:
+    import json
+
+    path = _settings_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = {}
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        pass
+    data["own_phone"] = phone
+    path.write_text(json.dumps(data, indent=2) + "\n")

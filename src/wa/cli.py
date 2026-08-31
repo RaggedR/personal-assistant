@@ -280,6 +280,36 @@ def cmd_bridge(args):
             " stop it and re-run with:  wa bridge start --foreground",
         ])
 
+    elif args.bridge_command == "pair":
+        phone = args.phone or config.own_phone()
+        if not phone:
+            raise UsageError(
+                "Your own WhatsApp number is needed, in full international form "
+                "with no '+' or leading zero (e.g. 61412345678):\n"
+                "  wa bridge pair --phone 61412345678"
+            )
+        phone = jidmod.phone_of(jidmod.normalise(phone))
+        config.save_own_phone(phone)
+        result = bridge.pair(phone, wait_seconds=args.wait)
+
+        def render(p):
+            if p.get("already_connected"):
+                return ["Bridge is already connected — no pairing needed."]
+            return [
+                "",
+                f"    {p['code']}",
+                "",
+                "Enter that code on your phone:",
+                "  WhatsApp → Settings → Linked devices → Link a device",
+                "  → 'Link with phone number instead' → type the code",
+                "",
+                "The code is valid for about 3 minutes. The bridge is running and "
+                "waiting;",
+                "run  wa status  once you've entered it.",
+            ]
+
+        output.emit(result, render)
+
     elif args.bridge_command == "stop":
         output.emit(bridge.stop(), lambda p: [
             f"Stopped (pid {p['pid']})." if p["stopped"] else "Bridge was not running."])
@@ -366,6 +396,13 @@ def build_parser() -> argparse.ArgumentParser:
     q = sub.add_parser("start", parents=[common])
     q.add_argument("--foreground", action="store_true",
                    help="Run attached, so a first-time QR code is visible")
+    q.set_defaults(func=cmd_bridge)
+    q = sub.add_parser("pair", parents=[common],
+                       help="Link this machine using an 8-digit code (no QR)")
+    q.add_argument("--phone", default=None,
+                   help="YOUR OWN WhatsApp number, international, e.g. 61412345678")
+    q.add_argument("--wait", type=float, default=45.0,
+                   help="Seconds to wait for the code to appear")
     q.set_defaults(func=cmd_bridge)
     q = sub.add_parser("stop", parents=[common]); q.set_defaults(func=cmd_bridge)
     q = sub.add_parser("logs", parents=[common])

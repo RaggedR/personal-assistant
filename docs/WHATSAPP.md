@@ -43,12 +43,31 @@ Newest:   Sat 11 Jul 10:50
 ```bash
 git clone https://github.com/lharries/whatsapp-mcp.git ~/git/whatsapp-mcp
 cd ~/git/whatsapp-mcp/whatsapp-bridge && go build     # needs Go
-wa bridge start --foreground                          # scan the QR with your phone
+wa bridge pair --phone 61412345678                    # YOUR OWN number
 ```
 
-The first run prints a QR code to be scanned from **WhatsApp → Settings →
-Linked devices**, so it needs a real terminal — hence `--foreground`. The
-session persists afterwards, and `wa bridge start` can run it detached.
+### Pairing: prefer the code, not the QR
+
+`wa bridge pair` links the machine using an **8-digit code**, printed as plain
+text and valid for about three minutes. On your phone: **WhatsApp → Settings →
+Linked devices → Link a device → "Link with phone number instead"**, then type
+the code.
+
+`wa bridge start --foreground` is the QR alternative, and it is strictly worse
+whenever an agent is driving: a QR is an *image* that rotates every ~20 seconds,
+so it cannot survive being relayed through a chat message, written to a log, or
+read on the next turn of a conversation. A text code can. This is why
+`wa bridge pair` exists and is the documented default.
+
+`pair` returns as soon as the code appears and leaves the bridge running, so
+there is time to enter it. Confirm with `wa status`.
+
+**Devices are unlinked after ~14 days offline.** If the bridge has been down
+longer than that, `wa bridge start` will not simply reconnect — it needs
+re-pairing. Your own number is remembered in `~/.config/pa/wa.json`, so
+subsequent re-pairs are just `wa bridge pair`.
+
+The session persists once linked, and `wa bridge start` runs it detached.
 
 Override the location with `WA_BRIDGE_DIR`, the database with `WA_MESSAGES_DB`,
 or the endpoint with `WA_API_BASE`.
@@ -95,6 +114,7 @@ failure that matters:
 | `resolve QUERY` | Print one JID for a name — for scripting |
 | `send` | Send text and/or a file — **requires `--confirm`** |
 | `download ID` | Fetch a message's media |
+| `bridge pair` | Link this machine with an 8-digit code (preferred) |
 | `bridge status\|start\|stop\|logs` | Manage the bridge process |
 
 ## Known data limitations

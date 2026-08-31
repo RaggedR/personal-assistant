@@ -136,6 +136,82 @@ def _read_pid() -> int | None:
     return pid
 
 
+CODE_MARKER = "Enter this code in WhatsApp"
+SUCCESS_MARKER = "Successfully connected and authenticated"
+LOGGED_OUT_MARKER = "Device logged out"
+
+
+def _extract_pair_code(text: str) -> str | None:
+    """Pull the 8-character linking code out of the bridge's output.
+
+    The bridge prints it on its own indented line after CODE_MARKER. Codes look
+    like ``ABCD-EFGH``; take the last one, since a retry appends a fresh code.
+    """
+    import re
+
+    codes = re.findall(r"\b([A-Z0-9]{4}-[A-Z0-9]{4})\b", text)
+    return codes[-1] if codes else None
+
+
+def pair(phone: str, wait_seconds: float = 45.0) -> dict:
+    """Start the bridge in phone-number pairing mode and return the link code.
+
+    Phone-number pairing is far better suited to being driven by an agent than
+    QR scanning: the code is plain text with a ~3 minute lifetime, where a QR
+    is an image that rotates every ~20 seconds. The bridge already supports it
+    via the WHATSAPP_PHONE environment variable.
+
+    Returns as soon as the code appears, leaving the bridge running so the
+    person has time to enter it. Poll ``is_running`` afterwards to confirm.
+    """
+    import time
+
+    if is_running():
+        return {"already_connected": True}
+
+    binary = config.bridge_binary()
+    if not binary.exists():
+        raise BridgeDown(
+            f"Bridge binary not found at {binary}.\n"
+            f"Build it with:  cd {config.bridge_dir()} && go build"
+        )
+
+    stop()  # clear any half-started process holding the session
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Truncate so we only read markers from *this* attempt.
+    LOG_PATH.write_text("")
+
+    environment = dict(os.environ, WHATSAPP_PHONE=phone)
+    with LOG_PATH.open("ab") as log:
+        process = subprocess.Popen(
+            [str(binary)], cwd=str(config.bridge_dir()),
+            stdout=log, stderr=log, stdin=subprocess.DEVNULL,
+            start_new_session=True, env=environment,
+        )
+    PID_PATH.write_text(str(process.pid))
+
+    deadline = time.monotonic() + wait_seconds
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise BridgeDown(
+                "The bridge exited before printing a pairing code.\n"
+                + "\n".join(tail_log(15))
+            )
+        text = LOG_PATH.read_text(errors="replace")
+        code = _extract_pair_code(text) if CODE_MARKER in text else None
+        if code:
+            return {"code": code, "pid": process.pid, "phone": phone,
+                    "log": str(LOG_PATH)}
+        if SUCCESS_MARKER in text:
+            return {"already_connected": True, "pid": process.pid}
+        time.sleep(0.5)
+
+    raise BridgeDown(
+        f"No pairing code appeared within {wait_seconds:.0f}s. Recent output:\n"
+        + "\n".join(tail_log(20))
+    )
+
+
 def start(foreground: bool = False) -> dict:
     """Launch the bridge.
 

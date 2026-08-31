@@ -83,7 +83,12 @@ primitives is simpler than a third package. Do not fork them.
 11. **Never guess a recipient.** An ambiguous name is refused with candidates
     listed; a local-format number is refused rather than having a country code
     added. Misdelivery is unrecoverable — there is no unsend.
-12. **Do not invent group senders.** The bridge often records a group's own id
+12. **Pair with `wa bridge pair`, never the QR flow.** A QR is an image that
+    rotates every ~20 seconds, so it cannot be relayed through a chat message
+    or read on a later turn; the 8-digit code is text and lasts ~3 minutes.
+    `pair` returns as soon as the code appears and leaves the bridge running,
+    which is what makes it usable across turns.
+13. **Do not invent group senders.** The bridge often records a group's own id
     in `sender`. Render that as `(unknown)`. The heuristic applies to groups
     only: in a one-to-one chat, sender equalling the chat id is normal.
 
