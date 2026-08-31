@@ -27,9 +27,20 @@ src/pa/
   output.py       text/JSON rendering; the only place that prints
   errors.py       typed errors carrying exit codes
   commands/       one module per group: mail, cal, contacts, auth_cmd
+src/wa/           the `wa` WhatsApp CLI (optional; see docs/WHATSAPP.md)
+  jid.py          JID parsing and recipient normalisation (pure, tested)
+  store.py        read-only SQLite queries against the bridge's store
+  bridge.py       HTTP client for the Go bridge + process control
+  cli.py          argparse tree and commands
 tests/            fully offline
 docs/SETUP.md     the OAuth onboarding walkthrough
+docs/WHATSAPP.md  why `wa` needs a daemon, and its data limitations
+ONBOARDING.md     setup script addressed to Claude, for new users
 ```
+
+`wa` reuses `pa.output`, `pa.errors` and `pa.timeparse` rather than duplicating
+them. That is deliberate: they are generic, and two frontends over shared
+primitives is simpler than a third package. Do not fork them.
 
 ## Invariants — do not break these
 
@@ -54,8 +65,27 @@ docs/SETUP.md     the OAuth onboarding walkthrough
 7. **Errors are typed.** Raise from `pa.errors` so the exit code is right;
    `cli.main` prints one line, never a traceback.
 8. **Tests stay offline.** `tests/conftest.py` redirects both `PA_HOME` and
-   `config.LEGACY_MCP_DIRS` into a temp dir. Never add a test that needs
-   network or the developer's own credentials.
+   `config.LEGACY_MCP_DIRS` into a temp dir; `wa` tests point `WA_MESSAGES_DB`
+   at a temp SQLite file. Never add a test that needs network or the
+   developer's own credentials.
+
+### `wa`-specific invariants
+
+9. **Never compare bridge timestamps as strings.** They are text with a UTC
+    offset, so `02:00+10:00` sorts before `02:30+11:00` while being the *later*
+    instant. Every filter and every `ORDER BY` must go through
+    `strftime('%s', timestamp)`. This bug was introduced and fixed three times
+    during development — in range filters, in `ORDER BY`, and in `stats()`'s
+    `MAX()`. `tests/test_wa_timestamps.py` pins all three and includes a test
+    asserting the naive version really is wrong.
+10. **The store is opened read-only** (`mode=ro`). The bridge is the sole
+    writer; `wa` must never be able to lock or corrupt it.
+11. **Never guess a recipient.** An ambiguous name is refused with candidates
+    listed; a local-format number is refused rather than having a country code
+    added. Misdelivery is unrecoverable — there is no unsend.
+12. **Do not invent group senders.** The bridge often records a group's own id
+    in `sender`. Render that as `(unknown)`. The heuristic applies to groups
+    only: in a one-to-one chat, sender equalling the chat id is normal.
 
 ## Adding a subcommand
 
@@ -84,7 +114,7 @@ Wrap every Google call in `try/except HttpError` and
 ## Testing
 
 ```bash
-python3 -m pytest -q            # 75 tests, ~0.6s, no network
+python3 -m pytest -q            # 125 tests, ~0.7s, no network
 ```
 
 Pure modules (`gmailmsg`, `timeparse`, `output`, `auth._covers`) are where the

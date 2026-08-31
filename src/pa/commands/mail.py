@@ -46,7 +46,7 @@ def _header_addresses(header_value: str) -> list[str]:
     """Pull bare addresses out of an RFC 5322 header.
 
     Never split such a header on commas: a display name may legitimately
-    contain one (``"Ghani, Neil" <neil@x.com>``), which naive splitting turns
+    contain one (``"Doe, Jane" <jane@x.com>``), which naive splitting turns
     into two invalid recipients.
     """
     return [addr for _name, addr in getaddresses([header_value or ""]) if addr]

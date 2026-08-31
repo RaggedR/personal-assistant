@@ -655,7 +655,7 @@ Report what you found, using their actual data — this is the moment it becomes
 real to them:
 
 > It's working. You have 12 unread messages, and three things on your calendar
-> this week — a meeting with Neil on Thursday at 4:30, and two others.
+> this week — a meeting with Alex on Thursday at 4:30, and two others.
 
 → STOP.
 
@@ -718,7 +718,7 @@ overwrite anything already there.
 > You're set up. From now on you can just ask me things like:
 >
 > - "What's on my calendar this week?"
-> - "Any unread mail from Neil?"
+> - "Any unread mail from Alex?"
 > - "Draft a reply to that saying I'll have it done by Friday"
 >
 > I'll draft, you approve, and only then does anything actually get sent.

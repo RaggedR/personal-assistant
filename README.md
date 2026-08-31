@@ -13,7 +13,7 @@ Mon 31 Aug 09:00  09:00  Standup                   Zoom   98oqokrpkb3j02k7rin70r
 Tue 01 Sep 18:00  18:00  Reading group                    3lbqtsiut93j4elt3r370tn5q8
 
 $ pa mail search 'from:alex is:unread' -n 3
-$ pa mail draft --to alex@example.com --subject 'Grant draft' --body 'Notes attached.'
+$ pa mail draft --to alex@example.com --subject 'Draft report' --body 'Notes attached.'
 $ pa mail send --draft-id r8511839562792451920 --confirm
 ```
 
@@ -258,6 +258,18 @@ $ pa auth status
 
 Run `pa auth login` when you want to consolidate onto `pa`'s own store and add
 Contacts, then remove the MCP servers from your agent's configuration.
+
+## `wa` — WhatsApp (optional)
+
+The same package installs a second command, `wa`, for WhatsApp. It is optional,
+Robin-specific, and structurally different from `pa`: WhatsApp has no official
+API, so `wa` sits on top of a locally-running Go bridge
+([`lharries/whatsapp-mcp`](https://github.com/lharries/whatsapp-mcp)) that holds
+a live WhatsApp Web session and records messages into SQLite.
+
+It needs no setup to be *installed* and does nothing until that bridge exists,
+so it is safe to ignore entirely. Sending is confirmation-gated exactly as in
+`pa`. See **[docs/WHATSAPP.md](docs/WHATSAPP.md)**.
 
 ## Development
 

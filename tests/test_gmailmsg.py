@@ -43,10 +43,10 @@ def test_plain_text_is_preferred_over_html():
 
 
 def test_html_is_de_tagged_when_no_plain_part():
-    html = "<style>x{}</style><p>Hello</p><br><b>Neil</b> &amp; co"
+    html = "<style>x{}</style><p>Hello</p><br><b>Jane</b> &amp; co"
     payload = {"parts": [{"mimeType": "text/html", "body": {"data": b64(html)}}]}
     body = gmailmsg.extract_body(payload)
-    assert "Hello" in body and "Neil" in body and "& co" in body
+    assert "Hello" in body and "Jane" in body and "& co" in body
     assert "<" not in body and "x{}" not in body
 
 
@@ -81,11 +81,11 @@ def test_attachments_require_an_attachment_id():
 
 def test_summarise_extracts_flags_and_display_name():
     msg = message(headers=[
-        {"name": "From", "value": "Neil Ghani <alex@example.com>"},
+        {"name": "From", "value": "Alex Example <alex@example.com>"},
         {"name": "Subject", "value": "Grant"},
     ])
     got = gmailmsg.summarise(msg)
-    assert got["from_name"] == "Neil Ghani"
+    assert got["from_name"] == "Alex Example"
     assert got["unread"] is True
     assert got["starred"] is False
     assert got["thread_id"] == "thr1"

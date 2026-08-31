@@ -61,7 +61,7 @@ class FakeMessages:
     def get(self, **kw):
         return Call(self.log, "messages.get", kw, {
             "id": "m1", "threadId": "t1", "labelIds": [],
-            "payload": {"headers": [{"name": "From", "value": "Neil <alex@example.com>"},
+            "payload": {"headers": [{"name": "From", "value": "Alex <alex@example.com>"},
                                     {"name": "Subject", "value": "Grant"},
                                     {"name": "Message-ID", "value": "<orig@mail>"}],
                         "parts": []},
@@ -196,7 +196,7 @@ def test_reply_does_not_double_prefix_an_existing_re_subject(fake_api, monkeypat
 
 def test_header_addresses_ignores_commas_inside_display_names():
     # The bug this guards: naive comma splitting produced two bogus recipients.
-    assert mail._header_addresses('"Ghani, Neil" <neil@x.com>') == ["neil@x.com"]
+    assert mail._header_addresses('"Doe, Jane" <jane@x.com>') == ["jane@x.com"]
     assert mail._header_addresses("a@x.com, b@y.com") == ["a@x.com", "b@y.com"]
     assert mail._header_addresses("") == []
     assert mail._header_addresses(None) == []
