@@ -291,6 +291,36 @@ def cmd_attachments(args):
     output.emit({"id": args.id, "attachments": found, "saved": saved}, render)
 
 
+def cmd_export(args):
+    """Write the full RFC-822 original of a message to a .eml file.
+
+    Unlike ``read`` (which renders a parsed view) this preserves the message
+    exactly as Gmail received it — all headers, the DKIM-Signature and
+    Authentication-Results included — so the saved file is the verifiable
+    original rather than a transcript. That matters when the .eml is kept as
+    evidence: a third party can re-check the DKIM signature against the
+    sending domain's key only if nothing was reparsed or re-encoded.
+    """
+    api = _api(args)
+    message = _get_message(api, args.id, fmt="raw")
+    data = message["raw"]
+    # Gmail returns base64url WITHOUT padding; restore it before decoding.
+    raw = base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))
+
+    out = Path(args.out).expanduser() if args.out else Path.cwd()
+    # A directory target (existing dir, or a trailing slash) gets a stable,
+    # collision-free default filename; anything else is taken as the file path.
+    if out.is_dir() or args.out in (None, "") or str(args.out).endswith(os.sep):
+        out = out / f"{args.id}.eml"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(raw)
+
+    output.emit(
+        {"id": args.id, "path": str(out), "bytes": len(raw)},
+        lambda p: [f"Wrote {p['bytes']} bytes (RFC-822 original) to {p['path']}"],
+    )
+
+
 # --------------------------------------------------------------- write side
 
 
@@ -527,6 +557,14 @@ def register(subparsers, common):
     p.add_argument("id")
     p.add_argument("--download", metavar="DIR", help="Directory to save attachments into")
     p.set_defaults(func=cmd_attachments)
+
+    p = actions.add_parser("export", parents=[common],
+                           help="Save a message's full RFC-822 original as a .eml file")
+    p.add_argument("id")
+    p.add_argument("--out", metavar="PATH",
+                   help="Output file, or a directory (writes <id>.eml). "
+                        "Defaults to <id>.eml in the current directory.")
+    p.set_defaults(func=cmd_export)
 
     p = actions.add_parser("profile", parents=[common], help="Show the authenticated mailbox")
     p.set_defaults(func=cmd_profile)
